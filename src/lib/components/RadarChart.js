@@ -16,7 +16,7 @@ const setViewBox = options =>
   }`;
 
 const defaultOptions = {
-  size: 300,
+  size: 600,
   axes: true, // show axes?
   scales: 3, // show scale circles?
   captions: true, // show captions?
@@ -28,9 +28,7 @@ const defaultOptions = {
   axisProps: () => ({ className: 'axis' }),
   scaleProps: () => ({ className: 'scale', fill: 'none' }),
   shapeProps: () => ({ className: 'shape' }),
-  dotProps: () => ({
-    className: 'dot'
-  }),
+  dotProps: () => ({ className: 'dot' }),
   captionProps: () => ({
     className: 'caption',
     textAnchor: 'middle',
@@ -40,7 +38,15 @@ const defaultOptions = {
 };
 
 const RadarChart = props => {
-  const { data, captions, options, size = defaultOptions.size, id } = props;
+  // TODO find a better way to pass in props (i.e., 'active')
+  const {
+    data,
+    captions,
+    options,
+    size = defaultOptions.size,
+    id,
+    active
+  } = props;
 
   const chartOptions = {
     ...defaultOptions,
@@ -49,7 +55,7 @@ const RadarChart = props => {
   };
 
   const { setViewBox } = chartOptions;
-  const chart = radar(captions, data, chartOptions);
+  const chart = radar(captions, data, chartOptions, active);
 
   return (
     <svg

@@ -10,7 +10,7 @@
     "prepare": "npm run build",
     "demo": "node scripts/demo.js",
     "test": "node scripts/test.js --env=jsdom",
-    "prettier": "prettier --single-quote --write 'src/**/*.js' 'test/**/*.js'"
+    "prettier": "prettier --write 'src/**/*.js' 'test/**/*.js'"
   },
   "repository": {
     "type": "git",
@@ -34,7 +34,9 @@
     "build/css/**.*"
   ],
   "license": "ISC",
-  "dependencies": {},
+  "dependencies": {
+    "classnames": "^2.2.6"
+  },
   "devDependencies": {
     "autoprefixer": "7.1.6",
     "babel-core": "6.26.0",

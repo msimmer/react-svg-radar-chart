@@ -1,4 +1,5 @@
 import React from 'react';
+import classNames from 'classnames';
 
 const polarToX = (angle, distance) => Math.cos(angle - Math.PI / 2) * distance;
 
@@ -28,14 +29,18 @@ const dot = (columns, options) => (chartData, i) => {
   const data = chartData.data;
   const meta = chartData.meta || {};
   const extraProps = options.dotProps(meta);
+
   let mouseEnter = () => {};
   let mouseLeave = () => {};
+
   if (extraProps.mouseEnter) {
     mouseEnter = extraProps.mouseEnter;
   }
+
   if (extraProps.mouseLeave) {
     mouseLeave = extraProps.mouseLeave;
   }
+
   return columns.map(col => {
     const val = data[col.key];
     if ('number' !== typeof val) {
@@ -55,30 +60,36 @@ const dot = (columns, options) => (chartData, i) => {
   });
 };
 
-const shape = (columns, options) => (chartData, i) => {
+const shape = (columns, options, active) => (chartData, i) => {
   const data = chartData.data;
   const meta = chartData.meta || {};
   const extraProps = options.shapeProps(meta);
+
   return (
     <path
       key={`shape-${i}`}
       d={options.smoothing(
         columns.map(col => {
           const val = data[col.key];
+
           if ('number' !== typeof val) {
             throw new Error(`Data set ${i} is invalid.`);
           }
 
           return [
-            polarToX(col.angle, (val * options.chartSize) / 2),
-            polarToY(col.angle, (val * options.chartSize) / 2)
+            polarToX(col.angle, (val * options.chartSize) / 2), // point position x
+            polarToY(col.angle, (val * options.chartSize) / 2), // point position y
+            polarToX(col.angle, ((val - 0.3) * options.chartSize) / 2), // control position x
+            polarToY(col.angle, ((val - 0.3) * options.chartSize) / 2) // control position y
           ];
         })
       )}
       {...extraProps}
       stroke={meta.color}
       fill={meta.color}
-      className={[extraProps.className, meta.class].join(' ')}
+      className={classNames(extraProps.className, meta.class, {
+        active: active === i
+      })}
     />
   );
 };
@@ -93,25 +104,44 @@ const scale = (options, value) => (
   />
 );
 
-const caption = options => col => (
-  <text
-    key={`caption-of-${col.key}`}
-    x={polarToX(col.angle, (options.size / 2) * 0.95).toFixed(4)}
-    y={polarToY(col.angle, (options.size / 2) * 0.95).toFixed(4)}
-    dy={(options.captionProps(col).fontSize || 10) / 2}
-    {...options.captionProps(col)}
-  >
-    {col.caption}
-  </text>
-);
+const caption = options => (col, i, arr) => {
+  // const meta = chartData.meta || {};
+  const extraProps = options.captionProps(col);
 
-const render = (captions, chartData, options = {}) => {
+  let { mouseEnter, mouseLeave, ...rest } = extraProps;
+
+  mouseEnter = mouseEnter ? mouseEnter : () => {};
+  mouseLeave = mouseLeave ? mouseLeave : () => {};
+
+  const len = arr.length;
+  const x = polarToX(col.angle, (options.size / 2) * 0.95).toFixed(4);
+  const y = polarToY(col.angle, (options.size / 2) * 0.95).toFixed(4);
+
+  return (
+    <text
+      transform={`rotate(${(360 / len) * i + 90},${x},${y})`}
+      key={`caption-of-${col.key}`}
+      x={x}
+      y={y}
+      // dy={(options.captionProps(col).fontSize || 10) / 2}
+      onMouseEnter={() => mouseEnter({ key: col.key, idx: i })}
+      onMouseLeave={() => mouseLeave({})}
+      {...rest}
+    >
+      {col.caption}
+    </text>
+  );
+};
+
+const render = (captions, chartData, options = {}, active) => {
   if ('object' !== typeof captions || Array.isArray(captions)) {
-    throw new Error('caption must be an object');
+    throw new Error('captions must be an object');
   }
+
   if (!Array.isArray(chartData)) {
     throw new Error('data must be an array');
   }
+
   options.chartSize = options.size / options.zoomDistance;
 
   const columns = Object.keys(captions).map((key, i, all) => {
@@ -121,18 +151,23 @@ const render = (captions, chartData, options = {}) => {
       angle: (Math.PI * 2 * i) / all.length
     };
   });
+
   const groups = [
-    <g key={`g-groups}`}>{chartData.map(shape(columns, options))}</g>
+    <g key={`g-groups}`}>{chartData.map(shape(columns, options, active))}</g>
   ];
+
   if (options.captions) {
     groups.push(<g key={`poly-captions`}>{columns.map(caption(options))}</g>);
   }
+
   if (options.dots) {
     groups.push(<g key={`g-dots`}>{chartData.map(dot(columns, options))}</g>);
   }
+
   if (options.axes) {
     groups.unshift(<g key={`group-axes`}>{columns.map(axis(options))}</g>);
   }
+
   if (options.scales > 0) {
     const scales = [];
     for (let i = options.scales; i > 0; i--) {
@@ -140,6 +175,7 @@ const render = (captions, chartData, options = {}) => {
     }
     groups.unshift(<g key={`poly-scales`}>{scales}</g>);
   }
+
   const delta = (options.size / 2).toFixed(4);
   return <g transform={`translate(${delta},${delta})`}>{groups}</g>;
 };
