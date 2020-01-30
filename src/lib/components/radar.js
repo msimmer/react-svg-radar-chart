@@ -1,31 +1,6 @@
 import React from 'react';
 import classNames from 'classnames';
 
-const stableSort = (arr, compare) => {
-  const length = arr.length;
-  const entries = Array(length);
-
-  let index;
-
-  // wrap values with initial indices
-  for (index = 0; index < length; index++) {
-    entries[index] = [index, arr[index]];
-  }
-
-  // sort with fallback based on initial indices
-  entries.sort((a, b) => {
-    const comparison = Number(arr(a[1], b[1]));
-    return comparison || a[0] - b[0];
-  });
-
-  // re-map original array to stable sorted values
-  for (index = 0; index < length; index++) {
-    arr[index] = entries[index][1];
-  }
-
-  return arr;
-};
-
 const polarToX = (angle, distance) => Math.cos(angle - Math.PI / 2) * distance;
 
 const polarToY = (angle, distance) => Math.sin(angle - Math.PI / 2) * distance;
