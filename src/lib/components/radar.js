@@ -1,6 +1,31 @@
 import React from 'react';
 import classNames from 'classnames';
 
+const stableSort = (arr, compare) => {
+  const length = arr.length;
+  const entries = Array(length);
+
+  let index;
+
+  // wrap values with initial indices
+  for (index = 0; index < length; index++) {
+    entries[index] = [index, arr[index]];
+  }
+
+  // sort with fallback based on initial indices
+  entries.sort((a, b) => {
+    const comparison = Number(arr(a[1], b[1]));
+    return comparison || a[0] - b[0];
+  });
+
+  // re-map original array to stable sorted values
+  for (index = 0; index < length; index++) {
+    arr[index] = entries[index][1];
+  }
+
+  return arr;
+};
+
 const polarToX = (angle, distance) => Math.cos(angle - Math.PI / 2) * distance;
 
 const polarToY = (angle, distance) => Math.sin(angle - Math.PI / 2) * distance;
@@ -60,12 +85,10 @@ const dot = (columns, options) => (chartData, i) => {
   });
 };
 
-const shape = (columns, options, active) => (chartData, i) => {
-  const data = chartData.data;
-  const meta = chartData.meta || {};
+const shape = (columns, options) => (item, i) => {
+  const data = item.data;
+  const meta = item.meta || {};
   const extraProps = options.shapeProps(meta);
-
-  console.log(extraProps);
 
   return (
     <React.Fragment key={`shape-${i}`}>
@@ -104,7 +127,7 @@ const shape = (columns, options, active) => (chartData, i) => {
         x={(options.size / 2) * -1}
         y={(options.size / 2) * -1}
         preserveAspectRatio="xMinYMin slice"
-        className={classNames('image', { active: active === i })}
+        className={classNames('image', { active: item.active })}
       />
     </React.Fragment>
   );
@@ -148,7 +171,7 @@ const caption = options => (col, i, arr) => {
   );
 };
 
-const render = (captions, chartData, options = {}, active) => {
+const render = (captions, chartData, options = {}) => {
   if ('object' !== typeof captions || Array.isArray(captions)) {
     throw new Error('captions must be an object');
   }
@@ -168,7 +191,7 @@ const render = (captions, chartData, options = {}, active) => {
   });
 
   const groups = [
-    <g key={`g-groups}`}>{chartData.map(shape(columns, options, active))}</g>
+    <g key={`g-groups}`}>{chartData.map(shape(columns, options))}</g>
   ];
 
   if (options.captions) {
