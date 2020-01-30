@@ -1,26 +1,14 @@
-/* chart */
-.shape {
-  fill-opacity: 0.02;
+.image {
+  transition: opacity 100ms ease;
+  opacity: 0.02;
 }
 
-.shape:hover {
-  fill-opacity: 0.65;
-  z-index: 100;
-}
-
-/* .shape {
-  transition: fill-opacity 200ms ease;
-} */
-
-.shape.active {
-  fill-opacity: 0.65;
+.image.active {
+  opacity: 0.65;
   z-index: 100;
 }
 
 .scale {
-  /* fill: #fafafa;
-  stroke: #999;
-  stroke-width: 0.2; */
   fill: transparent;
   stroke: transparent;
   stroke-width: 0.2;
@@ -37,11 +25,6 @@
   r: 5;
   transition: r 0.2s;
 }
-
-/* .dot:hover {
-  stroke: #bbb;
-  r: 8;
-} */
 
 .caption {
   fill: #000;

@@ -65,32 +65,47 @@ const shape = (columns, options, active) => (chartData, i) => {
   const meta = chartData.meta || {};
   const extraProps = options.shapeProps(meta);
 
+  console.log(extraProps);
+
   return (
-    <path
-      key={`shape-${i}`}
-      d={options.smoothing(
-        columns.map(col => {
-          const val = data[col.key];
+    <React.Fragment key={`shape-${i}`}>
+      <clipPath id={`shape-${i}`}>
+        <path
+          d={options.smoothing(
+            columns.map(col => {
+              const val = data[col.key];
 
-          if ('number' !== typeof val) {
-            throw new Error(`Data set ${i} is invalid.`);
-          }
+              if ('number' !== typeof val) {
+                throw new Error(`Data set ${i} is invalid.`);
+              }
 
-          return [
-            polarToX(col.angle, (val * options.chartSize) / 2), // point position x
-            polarToY(col.angle, (val * options.chartSize) / 2), // point position y
-            polarToX(col.angle, ((val - 0.3) * options.chartSize) / 2), // control position x
-            polarToY(col.angle, ((val - 0.3) * options.chartSize) / 2) // control position y
-          ];
-        })
-      )}
-      {...extraProps}
-      stroke={meta.color}
-      fill={meta.color}
-      className={classNames(extraProps.className, meta.class, {
-        active: active === i
-      })}
-    />
+              return [
+                polarToX(col.angle, (val * options.chartSize) / 2), // point position x
+                polarToY(col.angle, (val * options.chartSize) / 2), // point position y
+                polarToX(col.angle, ((val - 0.3) * options.chartSize) / 2), // control position x
+                polarToY(col.angle, ((val - 0.3) * options.chartSize) / 2) // control position y
+              ];
+            })
+          )}
+          {...extraProps}
+          stroke={meta.color}
+          fill={meta.color}
+          className={classNames(extraProps.className, meta.class)}
+        />
+      </clipPath>
+
+      <image
+        clipPath={`url(#shape-${i})`}
+        xlinkHref={meta.image}
+        src={meta.image}
+        alt=""
+        width="100%"
+        height="100%"
+        x={(options.size / 2) * -1}
+        y={(options.size / 2) * -1}
+        className={classNames('image', { active: active === i })}
+      />
+    </React.Fragment>
   );
 };
 
@@ -105,7 +120,6 @@ const scale = (options, value) => (
 );
 
 const caption = options => (col, i, arr) => {
-  // const meta = chartData.meta || {};
   const extraProps = options.captionProps(col);
 
   let { mouseEnter, mouseLeave, ...rest } = extraProps;
@@ -123,7 +137,7 @@ const caption = options => (col, i, arr) => {
       key={`caption-of-${col.key}`}
       x={x}
       y={y}
-      // dy={(options.captionProps(col).fontSize || 10) / 2}
+      dx={options.captionProps(col).fontSize || 20}
       onMouseEnter={() => mouseEnter({ key: col.key, idx: i })}
       onMouseLeave={() => mouseLeave({})}
       {...rest}

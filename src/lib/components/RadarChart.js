@@ -31,7 +31,7 @@ const defaultOptions = {
   dotProps: () => ({ className: 'dot' }),
   captionProps: () => ({
     className: 'caption',
-    textAnchor: 'middle',
+    textAnchor: 'end',
     fontSize: 10,
     fontFamily: 'sans-serif'
   })
