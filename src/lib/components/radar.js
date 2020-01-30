@@ -103,6 +103,7 @@ const shape = (columns, options, active) => (chartData, i) => {
         height="100%"
         x={(options.size / 2) * -1}
         y={(options.size / 2) * -1}
+        preserveAspectRatio="xMinYMin slice"
         className={classNames('image', { active: active === i })}
       />
     </React.Fragment>
